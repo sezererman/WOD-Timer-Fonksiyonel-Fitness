@@ -98,23 +98,21 @@ class SocialFeedTestHarness extends StatelessWidget {
               key: const Key('like_button'),
               icon: Icon(
                 isLiked
-                    ? Icons.fitness_center          // FILLED — beğenildi
+                    ? Icons
+                          .fitness_center // FILLED — beğenildi
                     : Icons.fitness_center_outlined, // OUTLINED — beğenilmedi
               ),
               onPressed: () {
                 ctx.read<WorkoutShareBloc>().add(
-                      ToggleLikeEvent(
-                        workoutId: postId,
-                        currentUserId: currentUserId,
-                      ),
-                    );
+                  ToggleLikeEvent(
+                    workoutId: postId,
+                    currentUserId: currentUserId,
+                  ),
+                );
               },
             ),
             // Beğeni sayacı — doğrulama için key ile işaretlendi.
-            Text(
-              '$likeCount',
-              key: const Key('like_count'),
-            ),
+            Text('$likeCount', key: const Key('like_count')),
             // İkon tipini doğrulama için semantic etiket
             Text(
               isLiked ? 'liked' : 'not_liked',
@@ -186,9 +184,9 @@ void main() {
       'GIVEN beğenilmemiş post / WHEN render / THEN Outlined ikon görünmeli',
       (tester) async {
         // GIVEN
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [tPostUnliked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [tPostUnliked]));
 
         // WHEN
         await tester.pumpWidget(buildHarness());
@@ -206,9 +204,9 @@ void main() {
       'GIVEN 5 beğenili post / WHEN render / THEN beğeni sayısı 5 göstermeli',
       (tester) async {
         // GIVEN
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [tPostUnliked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [tPostUnliked]));
 
         // WHEN
         await tester.pumpWidget(buildHarness());
@@ -280,9 +278,9 @@ void main() {
       'GIVEN outlined butona tıklanır / WHEN tap / THEN ToggleLikeEvent gönderilmeli',
       (tester) async {
         // GIVEN
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [tPostUnliked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [tPostUnliked]));
 
         await tester.pumpWidget(buildHarness());
 
@@ -338,9 +336,9 @@ void main() {
       'GIVEN hızlı 3 tıklama / WHEN ardışık tap / THEN 3 kez ToggleLikeEvent gönderilmeli',
       (tester) async {
         // GIVEN
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [tPostUnliked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [tPostUnliked]));
 
         await tester.pumpWidget(buildHarness());
 
@@ -352,9 +350,7 @@ void main() {
 
         // THEN — widget katmanı 3 kez event gönderdi
         // (Debounce mantığı BLoC içinde — burada sadece event iletimini doğrularız)
-        verify(
-          () => mockBloc.add(any<ToggleLikeEvent>()),
-        ).called(3);
+        verify(() => mockBloc.add(any<ToggleLikeEvent>())).called(3);
       },
     );
   });
@@ -371,9 +367,9 @@ void main() {
       'GIVEN beğenilmiş post / WHEN render / THEN like_status=liked ve sayı 6',
       (tester) async {
         // GIVEN
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [tPostLiked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [tPostLiked]));
 
         // WHEN
         await tester.pumpWidget(buildHarness());
@@ -404,16 +400,16 @@ void main() {
           likedUserIds: const ['another-user'],
         );
 
-        when(() => mockBloc.state).thenReturn(
-          WorkoutShareLoaded(posts: [otherPost, tPostUnliked]),
-        );
+        when(
+          () => mockBloc.state,
+        ).thenReturn(WorkoutShareLoaded(posts: [otherPost, tPostUnliked]));
 
         // WHEN
         await tester.pumpWidget(buildHarness());
 
         // THEN — sadece tPostUnliked için değerler
-        expect(find.text('5'), findsOneWidget);        // tPostUnliked.likesCount
-        expect(find.text('99'), findsNothing);          // otherPost sayısı görünmemeli
+        expect(find.text('5'), findsOneWidget); // tPostUnliked.likesCount
+        expect(find.text('99'), findsNothing); // otherPost sayısı görünmemeli
         expect(
           tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'not_liked',

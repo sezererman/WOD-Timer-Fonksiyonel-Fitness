@@ -118,9 +118,7 @@ void main() {
       'GIVEN level=14 / WHEN render / THEN "Seviye 14" metni görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN — _LevelSection RichText kullanır; TextSpan içeriğini arar.
@@ -142,9 +140,7 @@ void main() {
       'GIVEN level=14 / WHEN render / THEN "Beginner" tier etiketi görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN — tier etiketi doğrulanıyor
@@ -253,9 +249,7 @@ void main() {
       'GIVEN bio dolu profil / WHEN render / THEN bio tırnak içinde görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN — _BioSection tırnak ekler: '"Bio metni"'
@@ -270,9 +264,7 @@ void main() {
       'GIVEN name dolu profil / WHEN render / THEN kullanıcı adı görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN
@@ -320,9 +312,7 @@ void main() {
       'GIVEN favori hareket dolu / WHEN render / THEN "Muscle-Up" görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN
@@ -337,9 +327,7 @@ void main() {
       'GIVEN name null / WHEN render / THEN "İsimsiz Sporcu" görünmeli',
       (tester) async {
         // GIVEN
-        const profileNoName = UserProfileEntity(
-          id: 'test-user-id-abcdef12',
-        );
+        const profileNoName = UserProfileEntity(id: 'test-user-id-abcdef12');
         const stateNoName = ProfileLoaded(
           userProfile: profileNoName,
           sharedWorkouts: [],
@@ -375,9 +363,7 @@ void main() {
       'GIVEN profil header render / WHEN edit ikona tıkla / THEN BottomSheet açılmalı',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // Düzenle ikonu ekranda mı?
@@ -399,9 +385,7 @@ void main() {
       'GIVEN BottomSheet açık / WHEN render / THEN Bio ve FavoriteMove alanları görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // WHEN — sheet aç
@@ -421,9 +405,7 @@ void main() {
       'GIVEN mevcut bio var / WHEN BottomSheet açılır / THEN bio field dolu olmalı',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // WHEN — sheet aç
@@ -444,9 +426,7 @@ void main() {
       'GIVEN BottomSheet açık / WHEN Kaydet tıklanır / THEN sheet kapanmalı',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit_outlined));
@@ -476,9 +456,7 @@ void main() {
       'GIVEN profil istatistikleri / WHEN render / THEN Antrenman/Beğeni/Yorum etiketleri görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN
@@ -495,9 +473,7 @@ void main() {
       'GIVEN totalWorkouts=47 / WHEN render / THEN "47" değeri görünmeli',
       (tester) async {
         // GIVEN
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN
@@ -518,13 +494,11 @@ void main() {
       'GIVEN AvatarUploading state / WHEN render / THEN CircularProgressIndicator görünmeli',
       (tester) async {
         // GIVEN — yükleme state'i
-        when(() => mockProfileBloc.state).thenReturn(
-          const AvatarUploading(tProfileLoaded),
-        );
+        when(
+          () => mockProfileBloc.state,
+        ).thenReturn(const AvatarUploading(tProfileLoaded));
 
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pump(); // Senkron frame
 
         // THEN
@@ -541,9 +515,7 @@ void main() {
         // GIVEN
         when(() => mockProfileBloc.state).thenReturn(tProfileLoaded);
 
-        await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc),
-        );
+        await tester.pumpWidget(buildProfileHeader(bloc: mockProfileBloc));
         await tester.pumpAndSettle();
 
         // THEN — person ikonu var (default avatar)
