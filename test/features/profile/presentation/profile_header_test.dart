@@ -56,7 +56,7 @@ const tProfileLoaded = ProfileLoaded(
 // YARDIMCI — Widget Pump
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// ProfileHeaderWidget, BlocProvider<ProfileBloc> gerektirir.
+/// ProfileHeaderWidget, `BlocProvider<ProfileBloc>` gerektirir.
 /// Bu sarmalayıcı test ortamında gerekli sağlayıcıyı enjekte eder.
 Widget buildProfileHeader({
   required MockProfileBloc bloc,
