@@ -1,0 +1,33 @@
+name: Flutter CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    name: Code Analysis and Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true # Bağımlılıkların daha hızlı yüklenmesi için önbelleği açıyoruz
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Analyze Source Code
+        run: flutter analyze --fatal-infos --fatal-warnings # Katı (strict) tarama modunda çalıştırır
+
+      - name: Run Unit and Widget Tests
+        run: flutter test

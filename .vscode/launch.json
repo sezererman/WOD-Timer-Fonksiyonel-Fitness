@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Fonksiyonel Fitness Timer",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--dart-define=SUPABASE_URL=https://iljbmsaujptyrxccwyja.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsamJtc2F1anB0eXJ4Y2N3eWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzU2NzQsImV4cCI6MjA5NTE1MTY3NH0.ltTZGk7zrs8LqkSW3Mq3DljF64dXxbMvI1onLM-PVqU"
+            ]
+        }
+    ]
+}

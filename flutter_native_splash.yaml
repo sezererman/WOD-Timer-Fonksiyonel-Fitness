@@ -1,0 +1,44 @@
+flutter_native_splash:
+  # ==============================================================================
+  # TEMEL AYARLAR
+  # ==============================================================================
+  # Arka plan rengi (Mat Siyah / Koyu Gri)
+  color: "#121212"
+  
+  # Sistem Karanlık Modda (Dark Mode) iken kullanılacak arka plan
+  color_dark: "#080808"
+  
+  # Ortada görünecek ana logo / amblem (Saydam arka planlı PNG önerilir)
+  # Projenizdeki "assets" klasöründe yer alan mevcut bir logoyu işaret ettim.
+  image: "assets/app_icon.png"
+  
+  # (Opsiyonel) Sadece Dark Mode için farklı bir logo göstermek isterseniz:
+  # image_dark: "assets/app_icon_white.png"
+
+  # Splash Screen'in hangi platformlarda oluşturulacağı
+  android: true
+  ios: true
+  web: false
+
+  # Sistem çubuğu (durum çubuğu) görünümünün tam ekran yapılmasını sağlar
+  fullscreen: true
+
+  # ==============================================================================
+  # ANDROID 12+ (SPLASH SCREEN API) STANDARTLARI
+  # ==============================================================================
+  # Android 12'den itibaren Google'ın kendi resmi Splash Screen API'si kullanılır.
+  # Bu API'nin ikon boyut ve kuralları daha katıdır, bu blok ona uyumu sağlar.
+  android_12:
+    # İkonunuzu Android 12 standartlarında ortalar (saydam PNG olmalıdır)
+    image: "assets/app_icon.png"
+    # image_dark: "assets/app_icon_white.png"
+    
+    # Arka plan rengini burada da belirtmemiz gerekiyor
+    color: "#121212"
+    color_dark: "#080808"
+
+  # ==============================================================================
+  # IOS SPESİFİK AYARLAR
+  # ==============================================================================
+  # Eğer ios klasörü altında Storyboard bazlı farklı bir layout gerekirse
+  # default olarak bu paket en uyumlu AutoLayout Storyboard'unu otomatik oluşturur.

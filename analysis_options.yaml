@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# analysis_options.yaml — Fonksiyonel Fitness Timer
+# Katı lint kuralları: çöp kod, anti-pattern ve stil ihlallerini engeller.
+# ─────────────────────────────────────────────────────────────────────────────
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # Hata gibi davranılacak uyarı kategorileri
+  errors:
+    # Kullanılmayan import → hata
+    unused_import: error
+    # Kullanılmayan yerel değişken → hata
+    unused_local_variable: error
+    # Geçersiz override → hata
+    invalid_override: error
+    # Null güvenliği hataları → hata
+    invalid_assignment: error
+
+  exclude:
+    - "**/*.g.dart"        # Kod üretici çıktıları
+    - "**/*.freezed.dart"
+    - "lib/generated/**"
+
+linter:
+  rules:
+    # ── Ölü Kod & Temizlik ───────────────────────────────────────────────────
+    avoid_print: true                    # print() yasak — logger kullan
+    avoid_empty_else: true               # boş else bloğu yasak
+    avoid_redundant_argument_values: true # gereksiz varsayılan argüman yasak
+    avoid_returning_null_for_void: true  # void fonksiyonda null return yasak
+    no_duplicate_case_values: true       # switch'te aynı case yasak
+    no_logic_in_create_state: true       # createState içine iş mantığı yasak
+    avoid_unnecessary_containers: true   # gereksiz Container() yasak
+
+    # ── Flutter En İyi Pratikleri ────────────────────────────────────────────
+    prefer_const_constructors: true              # const eksikse uyar (Performans)
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true              # const olabilecekleri zorla
+    prefer_const_literals_to_create_immutables: true # (Performans)
+    sized_box_for_whitespace: true               # boşluk için SizedBox kullan
+    use_key_in_widget_constructors: true         # Widget'larda key zorunlu
+    use_decorated_box: true                      # gereksiz Container dekorasyonu yerine DecoratedBox
+    use_build_context_synchronously: true        # async sonrası bağlam dışı context'i engeller
+
+    # ── Dart Dil Best Practices ──────────────────────────────────────────────
+    prefer_single_quotes: true           # tek tırnak standardı
+    prefer_final_locals: true            # değişmeyen local'lar final olsun
+    prefer_final_fields: true            # değişmeyen field'lar final olsun
+    unnecessary_this: true               # gereksiz this. yasak
+    unnecessary_new: true                # new keyword yasak (Dart 2+)
+    unnecessary_const: true              # zaten const bağlamda tekrar const yasak
+    unnecessary_string_interpolations: true # '${x}' yerine '$x'
+    unnecessary_parenthesis: true        # gereksiz parantez yasak
+    unnecessary_nullable_for_final_variable_declarations: true
+    prefer_is_empty: true                # .length == 0 yerine .isEmpty
+    prefer_is_not_empty: true            # .length != 0 yerine .isNotEmpty
+    prefer_contains: true                # indexOf != -1 yerine .contains()
+    use_string_buffers: true             # döngüde string birleştirmeye karşı
+
+    # ── Tip Güvenliği ────────────────────────────────────────────────────────
+    avoid_dynamic_calls: true            # dynamic üzerinde method çağrısı yasak
+    always_declare_return_types: true    # dönüş tipi her zaman yazılmalı
+    avoid_types_as_parameter_names: true # parametre adı olarak tip adı kullanma
+
+    # ── İsimlendirme Standardı ───────────────────────────────────────────────
+    camel_case_types: true               # sınıf adları CamelCase
+    file_names: true                     # dosya adları snake_case
+    constant_identifier_names: true      # const'lar SCREAMING_SNAKE veya lowerCamel
+    non_constant_identifier_names: true  # değişkenler lowerCamelCase
+
+    # ── Async / Stream ───────────────────────────────────────────────────────
+    avoid_void_async: true               # void async yerine Future<void>
+    cancel_subscriptions: true           # StreamSubscription.cancel() zorunlu
+    close_sinks: true                    # StreamSink.close() zorunlu
+    unawaited_futures: true              # await edilmemiş Future uyarısı

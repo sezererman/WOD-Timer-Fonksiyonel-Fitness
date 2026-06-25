@@ -1,0 +1,82 @@
+name: Flutter CD Pipeline (Android Release)
+
+on:
+  # GitHub üzerinden yeni bir sürüm yayınlandığında çalışır
+  release:
+    types: [published]
+  # Veya 'v1.0.0' gibi bir tag ile push yapıldığında çalışır
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build_and_release_android:
+    name: Build & Release Android APK and AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java Environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Modern Android derlemeleri için Java 17 önerilir
+
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # =====================================================================================
+      # İLERİDE UYGULAMAYI GOOGLE PLAY İÇİN İMZALAMAK (KEYSTORE) İSTEDİĞİNİZDE 
+      # GITHUB SECRETS KULLANARAK AŞAĞIDAKİ ADIMLARI AKTİF EDEBİLİRSİNİZ:
+      # =====================================================================================
+      #
+      # - name: Decode Keystore
+      #   run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+      #
+      # - name: Create key.properties
+      #   run: |
+      #     echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+      #     echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+      #     echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+      #     echo "storeFile=upload-keystore.jks" >> android/key.properties
+      #
+      # =====================================================================================
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: Upload APK to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
+
+      - name: Upload AAB to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 7
+
+      # Eğer tetikleyici bir Release veya Tag ise, dosyaları GitHub Releases sayfasına asset olarak yükle
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
