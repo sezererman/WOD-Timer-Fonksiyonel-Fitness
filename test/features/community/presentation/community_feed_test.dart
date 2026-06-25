@@ -38,7 +38,6 @@ final tPostUnliked = WorkoutShareEntity(
   score: 42,
   date: DateTime(2026, 6, 25),
   likesCount: 5,
-  likedUserIds: const [],
 );
 
 /// Beğenilmiş bir gönderi — currentUser likedUserIds'de VAR.
@@ -139,7 +138,7 @@ void main() {
   // Mocktail fallback'leri.
   setUpAll(() {
     registerFallbackValue(
-      ToggleLikeEvent(workoutId: 'x', currentUserId: 'y'),
+      const ToggleLikeEvent(workoutId: 'x', currentUserId: 'y'),
     );
   });
 
@@ -218,7 +217,7 @@ void main() {
         expect(find.text('5'), findsOneWidget);
         expect(find.byKey(const Key('like_status')), findsOneWidget);
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'not_liked',
         );
       },
@@ -267,7 +266,7 @@ void main() {
 
         // THEN — filled ikon görünmeli (like_status 'liked' olmalı)
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'liked',
         );
         expect(find.byIcon(Icons.fitness_center_outlined), findsNothing);
@@ -294,7 +293,7 @@ void main() {
         // THEN — bloc'a doğru event gönderildi mi?
         verify(
           () => mockBloc.add(
-            ToggleLikeEvent(
+            const ToggleLikeEvent(
               workoutId: _kPostId,
               currentUserId: _kCurrentUserId,
             ),
@@ -314,7 +313,7 @@ void main() {
 
         await tester.pumpWidget(buildHarness());
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'liked',
         );
         expect(find.text('6'), findsOneWidget);
@@ -325,7 +324,7 @@ void main() {
 
         // THEN — geri döndü
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'not_liked',
         );
         expect(find.text('5'), findsOneWidget);
@@ -381,7 +380,7 @@ void main() {
 
         // THEN
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'liked',
         );
         expect(find.text('6'), findsOneWidget);
@@ -416,7 +415,7 @@ void main() {
         expect(find.text('5'), findsOneWidget);        // tPostUnliked.likesCount
         expect(find.text('99'), findsNothing);          // otherPost sayısı görünmemeli
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'not_liked',
         );
       },
@@ -438,7 +437,7 @@ void main() {
         emitState(WorkoutShareLoaded(posts: [tPostLiked]));
         await tester.pumpWidget(buildHarness());
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'liked',
         );
 
@@ -448,7 +447,7 @@ void main() {
 
         // THEN — rollback tamamlandı
         expect(
-          (tester.widget<Text>(find.byKey(const Key('like_status')))).data,
+          tester.widget<Text>(find.byKey(const Key('like_status'))).data,
           'not_liked',
         );
         expect(find.text('5'), findsOneWidget);

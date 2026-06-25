@@ -34,10 +34,9 @@ const _kTestBio = 'Her antrenman bir adım ileri.';
 const _kTestName = 'Erman Demir';
 
 /// Test profil entity'si — bio dolu, favori hareket belirtilmiş.
-final tUserProfile = UserProfileEntity(
+const tUserProfile = UserProfileEntity(
   id: 'test-user-id-abcdef12',
   name: _kTestName,
-  avatarUrl: null, // Avatar yok → kişi ikonu gösterilir
   bio: _kTestBio,
   favoriteMove: 'Muscle-Up',
   totalWorkouts: 47,
@@ -46,11 +45,11 @@ final tUserProfile = UserProfileEntity(
 );
 
 /// Tüm alanlarla doldurulmuş ProfileLoaded state.
-final tProfileLoaded = ProfileLoaded(
+const tProfileLoaded = ProfileLoaded(
   userProfile: tUserProfile,
-  sharedWorkouts: const <WorkoutShareEntity>[],
-  userComments: const <CommentEntity>[],
-  likedWorkouts: const <WorkoutShareEntity>[],
+  sharedWorkouts: <WorkoutShareEntity>[],
+  userComments: <CommentEntity>[],
+  likedWorkouts: <WorkoutShareEntity>[],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -120,7 +119,7 @@ void main() {
       (tester) async {
         // GIVEN
         await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc, level: 14),
+          buildProfileHeader(bloc: mockProfileBloc),
         );
         await tester.pumpAndSettle();
 
@@ -144,7 +143,7 @@ void main() {
       (tester) async {
         // GIVEN
         await tester.pumpWidget(
-          buildProfileHeader(bloc: mockProfileBloc, level: 14),
+          buildProfileHeader(bloc: mockProfileBloc),
         );
         await tester.pumpAndSettle();
 
@@ -288,19 +287,15 @@ void main() {
       'GIVEN bio null profil / WHEN render / THEN bio metni görünmemeli',
       (tester) async {
         // GIVEN — bio null
-        final profileNoBio = UserProfileEntity(
+        const profileNoBio = UserProfileEntity(
           id: 'test-user-id-abcdef12',
           name: _kTestName,
-          bio: null,
-          totalWorkouts: 0,
-          totalLikes: 0,
-          totalComments: 0,
         );
-        final stateNoBio = ProfileLoaded(
+        const stateNoBio = ProfileLoaded(
           userProfile: profileNoBio,
-          sharedWorkouts: const [],
-          userComments: const [],
-          likedWorkouts: const [],
+          sharedWorkouts: [],
+          userComments: [],
+          likedWorkouts: [],
         );
         when(() => mockProfileBloc.state).thenReturn(stateNoBio);
 
@@ -342,18 +337,14 @@ void main() {
       'GIVEN name null / WHEN render / THEN "İsimsiz Sporcu" görünmeli',
       (tester) async {
         // GIVEN
-        final profileNoName = UserProfileEntity(
+        const profileNoName = UserProfileEntity(
           id: 'test-user-id-abcdef12',
-          name: null,
-          totalWorkouts: 0,
-          totalLikes: 0,
-          totalComments: 0,
         );
-        final stateNoName = ProfileLoaded(
+        const stateNoName = ProfileLoaded(
           userProfile: profileNoName,
-          sharedWorkouts: const [],
-          userComments: const [],
-          likedWorkouts: const [],
+          sharedWorkouts: [],
+          userComments: [],
+          likedWorkouts: [],
         );
         when(() => mockProfileBloc.state).thenReturn(stateNoName);
 
@@ -528,7 +519,7 @@ void main() {
       (tester) async {
         // GIVEN — yükleme state'i
         when(() => mockProfileBloc.state).thenReturn(
-          AvatarUploading(tProfileLoaded),
+          const AvatarUploading(tProfileLoaded),
         );
 
         await tester.pumpWidget(
