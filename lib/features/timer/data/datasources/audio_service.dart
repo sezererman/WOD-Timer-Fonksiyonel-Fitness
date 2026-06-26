@@ -6,9 +6,9 @@ import '../../domain/entities/timer_sound_type.dart';
 /// Ensures sounds are mixed correctly without stopping background music.
 class AudioService {
   final AudioPlayer _beepShortPlayer = AudioPlayer();
-  final AudioPlayer _startBellPlayer = AudioPlayer();
-  final AudioPlayer _halfwayGongPlayer = AudioPlayer();
-  final AudioPlayer _finishHornPlayer = AudioPlayer();
+  final AudioPlayer _beepLongPlayer = AudioPlayer();
+  final AudioPlayer _roundCompletePlayer = AudioPlayer();
+  final AudioPlayer _workoutCompletePlayer = AudioPlayer();
 
   bool _isMuted = false;
 
@@ -33,17 +33,17 @@ class AudioService {
 
       await Future.wait([
         _beepShortPlayer.setAudioContext(context),
-        _startBellPlayer.setAudioContext(context),
-        _halfwayGongPlayer.setAudioContext(context),
-        _finishHornPlayer.setAudioContext(context),
+        _beepLongPlayer.setAudioContext(context),
+        _roundCompletePlayer.setAudioContext(context),
+        _workoutCompletePlayer.setAudioContext(context),
       ]);
 
       // Preload specific files
       await Future.wait([
-        _beepShortPlayer.setSource(AssetSource('sounds/beep_short.mp3')),
-        _startBellPlayer.setSource(AssetSource('sounds/start_bell.mp3')),
-        _halfwayGongPlayer.setSource(AssetSource('sounds/halfway_gong.mp3')),
-        _finishHornPlayer.setSource(AssetSource('sounds/finish_horn.mp3')),
+        _beepShortPlayer.setSource(AssetSource('sounds/beep_short.wav')),
+        _beepLongPlayer.setSource(AssetSource('sounds/beep_long.wav')),
+        _roundCompletePlayer.setSource(AssetSource('sounds/round_complete.wav')),
+        _workoutCompletePlayer.setSource(AssetSource('sounds/workout_complete.wav')),
       ]);
     } catch (e) {
       debugPrint('AudioService init failed: $e');
@@ -60,13 +60,13 @@ class AudioService {
           await _safePlay(_beepShortPlayer);
           break;
         case TimerSoundType.startBell:
-          await _safePlay(_startBellPlayer);
+          await _safePlay(_beepLongPlayer);
           break;
         case TimerSoundType.halfwayGong:
-          await _safePlay(_halfwayGongPlayer);
+          await _safePlay(_roundCompletePlayer);
           break;
         case TimerSoundType.finishHorn:
-          await _safePlay(_finishHornPlayer);
+          await _safePlay(_workoutCompletePlayer);
           break;
       }
     } catch (e) {
@@ -82,9 +82,9 @@ class AudioService {
   Future<void> dispose() async {
     await Future.wait([
       _beepShortPlayer.dispose(),
-      _startBellPlayer.dispose(),
-      _halfwayGongPlayer.dispose(),
-      _finishHornPlayer.dispose(),
+      _beepLongPlayer.dispose(),
+      _roundCompletePlayer.dispose(),
+      _workoutCompletePlayer.dispose(),
     ]);
   }
 }
