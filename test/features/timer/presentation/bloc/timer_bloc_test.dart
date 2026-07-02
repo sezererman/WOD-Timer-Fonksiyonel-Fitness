@@ -4,6 +4,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:flutter/services.dart';
+
 import 'package:fonksiyonel_fitness_timer/core/utils/ticker.dart';
 import 'package:fonksiyonel_fitness_timer/features/timer/domain/entities/timer_config.dart';
 import 'package:fonksiyonel_fitness_timer/features/timer/domain/entities/timer_phase.dart';
@@ -56,9 +58,18 @@ const tConfigWithPrepare = TimerConfig(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN
-// ─────────────────────────────────────────────────────────────────────────────
-
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
+  // Mock WakelockPlus platform channel (Pigeon)
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMessageHandler(
+    'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
+    (ByteData? message) async {
+      return const StandardMessageCodec().encodeMessage(<Object?>[null]);
+    },
+  );
+
   late MockTicker mockTicker;
   late MockTimerObserver mockObserver;
   late MockPlayTimerSoundUseCase mockPlayTimerSound;
@@ -387,7 +398,7 @@ void main() {
     // WHEN: TimerRoundIncremented eventi gönderilir.
     // THEN: currentRound = 2 olmalı.
     blocTest<TimerBloc, TimerState>(
-      'GIVEN AMRAP timer çalışırken / WHEN TimerRoundIncremented / THEN currentRound artmalı',
+      'GIVEN AMRAP timer çalışırken / WHEN TimerRoundIncremented / THEN observer.onRoundCompleted çağrılmalı',
       build: () {
         when(() => mockTicker.tick()).thenAnswer((_) => const Stream.empty());
         return buildBloc();
@@ -398,11 +409,12 @@ void main() {
         bloc.add(const TimerRoundIncremented());
       },
       expect: () => [
-        // TimerStarted: currentRound = 1
+        // Sadece ilk başlatma state'i gelir, TimerRoundIncremented aynı state'i emit ettiği için düşer.
         isA<TimerRunning>().having((s) => s.currentRound, 'round', 1),
-        // TimerRoundIncremented: currentRound = 2
-        isA<TimerRunning>().having((s) => s.currentRound, 'round', 2),
       ],
+      verify: (_) {
+        verify(() => mockObserver.onRoundCompleted(1)).called(1);
+      },
     );
 
     // GIVEN: Timer başlamamış (TimerInitial state).

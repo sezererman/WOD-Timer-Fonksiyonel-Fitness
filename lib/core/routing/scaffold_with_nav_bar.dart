@@ -67,7 +67,8 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
               duration: const Duration(milliseconds: 250),
               transitionBuilder: (child, animation) => SizeTransition(
                 sizeFactor: animation,
-                alignment: Alignment.topCenter,
+                // ignore: deprecated_member_use
+                axisAlignment: -1.0,
                 child: FadeTransition(opacity: animation, child: child),
               ),
               child: _isOnTimerTab
