@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
+import '../../../../design_system/constants/app_colors.dart';
+import '../../../../design_system/constants/app_strings.dart';
 import '../../../../core/utils/duration_formatter.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../bloc/history_bloc.dart';
 import '../bloc/history_event.dart';
 import '../bloc/history_state.dart';

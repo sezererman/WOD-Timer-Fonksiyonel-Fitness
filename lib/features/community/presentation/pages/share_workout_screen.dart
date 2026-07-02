@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/di/injection.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../bloc/share_form/workout_share_form_cubit.dart';
 import '../bloc/share_form/workout_share_form_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';

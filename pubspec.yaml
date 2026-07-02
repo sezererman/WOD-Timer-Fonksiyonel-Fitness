@@ -39,6 +39,8 @@ dependencies:
   # Media Picker & Cropper
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
+  wakelock_plus: ^1.5.2
+  connectivity_plus: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -66,5 +68,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/sounds/
+    - assets/sounds/beep_long.wav
+    - assets/sounds/beep_short.wav
+    - assets/sounds/round_complete.wav
+    - assets/sounds/workout_complete.wav
     - .env

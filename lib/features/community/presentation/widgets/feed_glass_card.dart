@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 
 class FeedGlassCard extends StatelessWidget {
   final Widget child;

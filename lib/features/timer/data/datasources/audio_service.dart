@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../domain/entities/timer_sound_type.dart';
+import '../../../../design_system/constants/asset_paths.dart';
 
 /// Preloads and manages the audio players for the CrossFit Timer.
 /// Ensures sounds are mixed correctly without stopping background music.
@@ -23,11 +24,18 @@ class AudioService {
     try {
       final context = AudioContext(
         android: const AudioContextAndroid(
-          usageType: AndroidUsageType.alarm,
+          isSpeakerphoneOn: true,
+          stayAwake: true,
+          contentType: AndroidContentType.sonification,
+          usageType: AndroidUsageType.alarm, // Sessiz/Titreşim modunu ezer
           audioFocus: AndroidAudioFocus.gainTransientMayDuck,
         ),
         iOS: AudioContextIOS(
-          options: const {AVAudioSessionOptions.duckOthers},
+          // AVAudioSessionCategory.playback zaten varsayılandır (Sessiz anahtarını ezer)
+          options: const {
+            AVAudioSessionOptions.duckOthers,
+            AVAudioSessionOptions.mixWithOthers, // Arka plan müziğini durdurmaz
+          },
         ),
       );
 
@@ -38,12 +46,14 @@ class AudioService {
         _workoutCompletePlayer.setAudioContext(context),
       ]);
 
-      // Preload specific files
+      // Pre-warm (cache) the sources
       await Future.wait([
-        _beepShortPlayer.setSource(AssetSource('sounds/beep_short.wav')),
-        _beepLongPlayer.setSource(AssetSource('sounds/beep_long.wav')),
-        _roundCompletePlayer.setSource(AssetSource('sounds/round_complete.wav')),
-        _workoutCompletePlayer.setSource(AssetSource('sounds/workout_complete.wav')),
+        _beepShortPlayer.setSource(AssetSource(AssetPaths.beepShort)),
+        _beepLongPlayer.setSource(AssetSource(AssetPaths.beepLong)),
+        _roundCompletePlayer.setSource(AssetSource(AssetPaths.roundComplete)),
+        _workoutCompletePlayer.setSource(
+          AssetSource(AssetPaths.workoutComplete),
+        ),
       ]);
     } catch (e) {
       debugPrint('AudioService init failed: $e');
@@ -57,26 +67,25 @@ class AudioService {
     try {
       switch (type) {
         case TimerSoundType.beepShort:
-          await _safePlay(_beepShortPlayer);
+          await _beepShortPlayer.play(AssetSource(AssetPaths.beepShort));
           break;
         case TimerSoundType.startBell:
-          await _safePlay(_beepLongPlayer);
+          await _beepLongPlayer.play(AssetSource(AssetPaths.beepLong));
           break;
         case TimerSoundType.halfwayGong:
-          await _safePlay(_roundCompletePlayer);
+          await _roundCompletePlayer.play(
+            AssetSource(AssetPaths.roundComplete),
+          );
           break;
         case TimerSoundType.finishHorn:
-          await _safePlay(_workoutCompletePlayer);
+          await _workoutCompletePlayer.play(
+            AssetSource(AssetPaths.workoutComplete),
+          );
           break;
       }
     } catch (e) {
       debugPrint('Failed to play sound $type: $e');
     }
-  }
-
-  Future<void> _safePlay(AudioPlayer player) async {
-    await player.stop();
-    await player.resume();
   }
 
   Future<void> dispose() async {

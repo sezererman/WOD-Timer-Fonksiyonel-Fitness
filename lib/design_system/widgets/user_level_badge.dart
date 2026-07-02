@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../utils/level_badge.dart';
+import '../../core/utils/level_badge.dart';
 
 // =============================================================================
 // UserLevelBadge — Seviye Rozeti Widget'ı

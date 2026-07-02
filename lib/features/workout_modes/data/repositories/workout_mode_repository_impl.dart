@@ -1,4 +1,4 @@
-import '../../../../core/constants/app_durations.dart';
+import '../../../../design_system/constants/app_durations.dart';
 import '../../domain/entities/workout_mode.dart';
 import '../../domain/entities/workout_preset.dart';
 import '../../domain/repositories/workout_mode_repository.dart';

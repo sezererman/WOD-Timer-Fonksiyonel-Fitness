@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../../core/constants/app_colors.dart';
+import '../../../../../design_system/constants/app_colors.dart';
 import '../../../../../core/utils/level_badge.dart';
-import '../../../../../core/widgets/user_level_badge.dart';
+import '../../../../../design_system/widgets/user_level_badge.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';

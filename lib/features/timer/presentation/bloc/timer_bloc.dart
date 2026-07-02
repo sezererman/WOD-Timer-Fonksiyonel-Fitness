@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_durations.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
+import '../../../../design_system/constants/app_durations.dart';
 import '../../../../core/utils/ticker.dart';
 import '../../../workout_modes/domain/entities/workout_mode.dart';
 import '../../domain/entities/timer_config.dart';
+import '../../domain/entities/timer_config_extensions.dart';
 import '../../domain/entities/timer_phase.dart';
+import '../../domain/entities/timer_phase_item.dart';
 import '../../domain/strategies/timer_strategy.dart';
 import '../../domain/entities/timer_sound_type.dart';
 import '../../domain/usecases/play_timer_sound_use_case.dart';
@@ -44,6 +47,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     on<TimerTicked>(_onTicked);
     on<TimerRoundIncremented>(_onRoundIncremented);
     on<TimerStopped>(_onStopped);
+    on<TimerFastForwarded>(_onFastForwarded);
   }
 
   void addObserver(TimerObserver observer) => _observers.add(observer);
@@ -52,6 +56,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   // --- Event Handlers ---
 
   void _onStarted(TimerStarted event, Emitter<TimerState> emit) {
+    WakelockPlus.enable();
     _workoutStartTime = DateTime.now();
     _totalPausedDuration = Duration.zero;
     _lastElapsedSeconds = 0;
@@ -62,17 +67,16 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   void _onPaused(TimerPaused event, Emitter<TimerState> emit) {
     if (state is! TimerRunning) return;
 
+    WakelockPlus.disable();
     _tickerSubscription?.cancel();
     _pauseStartTime = DateTime.now();
 
     final currentState = state as TimerRunning;
     emit(
       TimerPausedState(
-        phase: currentState.phase,
+        phases: currentState.phases,
+        currentPhaseIndex: currentState.currentPhaseIndex,
         remainingSeconds: currentState.remainingSeconds,
-        totalPhaseSeconds: currentState.totalPhaseSeconds,
-        currentRound: currentState.currentRound,
-        totalRounds: currentState.totalRounds,
         config: currentState.config,
       ),
     );
@@ -81,6 +85,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   void _onResumed(TimerResumed event, Emitter<TimerState> emit) {
     if (state is! TimerPausedState) return;
 
+    WakelockPlus.enable();
     _recordPauseDuration();
 
     final currentState = state as TimerPausedState;
@@ -91,11 +96,9 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
     emit(
       TimerRunning(
-        phase: currentState.phase,
+        phases: currentState.phases,
+        currentPhaseIndex: currentState.currentPhaseIndex,
         remainingSeconds: currentState.remainingSeconds,
-        totalPhaseSeconds: currentState.totalPhaseSeconds,
-        currentRound: currentState.currentRound,
-        totalRounds: currentState.totalRounds,
         config: currentState.config,
       ),
     );
@@ -123,11 +126,12 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
     final currentState = state as TimerActiveState;
     final config = currentState.config;
-    final phase = currentState.phase;
-    final currentRound = currentState.currentRound;
+    final phaseItem = currentState.currentPhaseItem;
+    
+    if (phaseItem == null) return; // Geçersiz state koruması
 
-    final strategy = _getStrategy(config, phase);
-    final totalSeconds = _getTotalPhaseSeconds(config, phase);
+    final strategy = _getStrategy(config, phaseItem.phase);
+    final totalSeconds = phaseItem.durationSeconds;
     final elapsedSeconds = event.elapsedSeconds;
 
     // Anti-Cheat: Zaman sıçraması kontrolü
@@ -147,9 +151,9 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     final trueRemaining = totalSeconds - elapsedSeconds;
     
     // Yarı Yol Kontrolü (Halfway)
-    if (phase == TimerPhase.work &&
+    if (phaseItem.phase == TimerPhase.work &&
         totalSeconds > 0 &&
-        currentRound > 0 &&
+        phaseItem.round > 0 &&
         trueRemaining == totalSeconds ~/ 2 &&
         !_halfwayPlayed) {
       _halfwayPlayed = true;
@@ -167,16 +171,14 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     if (!strategy.isFinished(totalSeconds, elapsedSeconds)) {
       emit(
         TimerRunning(
-          phase: phase,
+          phases: currentState.phases,
+          currentPhaseIndex: currentState.currentPhaseIndex,
           remainingSeconds: displayTime,
-          totalPhaseSeconds: totalSeconds,
-          currentRound: currentRound,
-          totalRounds: config.rounds,
           config: config,
         ),
       );
     } else {
-      _finishCurrentPhase(emit);
+      _advancePhase(emit);
     }
   }
 
@@ -192,55 +194,64 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     }
     emit(
       TimerRunning(
-        phase: currentState.phase,
+        phases: currentState.phases,
+        currentPhaseIndex: currentState.currentPhaseIndex,
         remainingSeconds: currentState.remainingSeconds,
-        totalPhaseSeconds: currentState.totalPhaseSeconds,
-        currentRound: currentState.currentRound + 1,
-        totalRounds: currentState.totalRounds,
         config: currentState.config,
       ),
     );
   }
 
+  void _onFastForwarded(TimerFastForwarded event, Emitter<TimerState> emit) {
+    // Sayacı ileri sarmak yalnızca aktif çalışırken mantıklıdır.
+    if (state is! TimerRunning) return;
+
+    final secondsToAdd = event.elapsedBackgroundDuration.inSeconds;
+    if (secondsToAdd <= 0) return;
+
+    final newElapsed = _lastElapsedSeconds + secondsToAdd;
+    _resumeTicker(newElapsed);
+    // Hemen UI'ı güncellemesi için manuel bir tick tetikleyelim
+    add(TimerTicked(newElapsed));
+  }
+
   // --- Logic Methods ---
 
   void _initializeWorkout(TimerConfig config, Emitter<TimerState> emit) {
-    if (config.prepareSeconds > 0) {
-      _startPhase(TimerPhase.prepare, config, 1, config.prepareSeconds, emit);
-    } else {
-      _startPhase(TimerPhase.work, config, 1, config.workSeconds, emit);
+    final phases = config.generatePhases();
+    if (phases.isEmpty) {
+      _completeWorkout(config, emit);
+      return;
     }
+    _startPhase(0, phases, config, emit);
   }
 
   void _startPhase(
-    TimerPhase phase,
+    int index,
+    List<TimerPhaseItem> phases,
     TimerConfig config,
-    int round,
-    int seconds,
     Emitter<TimerState> emit,
   ) {
     _lastElapsedSeconds = 0;
     _lastBeepSecond = null;
     _halfwayPlayed = false;
     _startTicker();
-    final strategy = _getStrategy(config, phase);
+    
+    final currentItem = phases[index];
+    final strategy = _getStrategy(config, currentItem.phase);
+    
     for (final observer in _observers) {
-      observer.onPhaseChanged(phase);
+      observer.onPhaseChanged(currentItem.phase);
     }
+
     emit(
       TimerRunning(
-        phase: phase,
-        remainingSeconds: strategy.calculateDisplayTime(seconds, 0),
-        totalPhaseSeconds: seconds,
-        currentRound: round,
-        totalRounds: config.rounds,
+        phases: phases,
+        currentPhaseIndex: index,
+        remainingSeconds: strategy.calculateDisplayTime(currentItem.durationSeconds, 0),
         config: config,
       ),
     );
-  }
-
-  void _finishCurrentPhase(Emitter<TimerState> emit) {
-    _advancePhase(emit);
   }
 
   void _advancePhase(Emitter<TimerState> emit) {
@@ -248,92 +259,32 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
     final currentState = state as TimerActiveState;
     final config = currentState.config;
-    final currentPhase = currentState.phase;
-    final currentRound = currentState.currentRound;
+    final phases = currentState.phases;
+    final nextIndex = currentState.currentPhaseIndex + 1;
 
-    switch (currentPhase) {
-      case TimerPhase.prepare:
-        _transitionToWork(config, currentRound, emit);
-      case TimerPhase.work:
-        _handleWorkPhaseEnd(config, currentRound, emit);
-      case TimerPhase.rest:
-        _transitionToWorkAfterRest(config, currentRound, emit);
-      case TimerPhase.cooldown:
-        _completeWorkout(config, emit);
+    // Tur (Round) bitimi event tetikleme:
+    // Eğer şu anki faz 'work' ise ve bir sonraki faz 'rest' veya yeni 'work' (veya bitiş) ise round bitmiş demektir.
+    // Ağaç yapısında bu biraz daha kompleks olabilir ama observers için basit tutuyoruz.
+    if (currentState.phase == TimerPhase.work) {
+      for (final observer in _observers) {
+        observer.onRoundCompleted(currentState.currentRound);
+      }
     }
-  }
 
-  void _transitionToWork(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    // Hazırlık bitip antrenman başladığında Start Bell çal
-    if (state is TimerActiveState && (state as TimerActiveState).phase == TimerPhase.prepare) {
-      unawaited(_playTimerSound(TimerSoundType.startBell));
-    }
-    _startPhase(TimerPhase.work, config, round, config.workSeconds, emit);
-  }
-
-  void _handleWorkPhaseEnd(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    for (final observer in _observers) {
-      observer.onRoundCompleted(round);
-    }
-    
-    if (config.restSeconds > 0 && round < config.rounds) {
-      _transitionToRest(config, round, emit);
-    } else if (round < config.rounds) {
-      _nextRoundWithoutRest(config, round, emit);
-    } else if (config.cooldownSeconds > 0) {
-      _transitionToCooldown(config, round, emit);
+    if (nextIndex < phases.length) {
+      // Start Bell çalma mantığı (Prepare'den Work'e geçerken veya yeni Work başlarken)
+      if (phases[nextIndex].phase == TimerPhase.work && 
+         (currentState.phase == TimerPhase.prepare || currentState.phase == TimerPhase.rest)) {
+        unawaited(_playTimerSound(TimerSoundType.startBell));
+      }
+      _startPhase(nextIndex, phases, config, emit);
     } else {
       _completeWorkout(config, emit);
     }
   }
 
-  void _transitionToRest(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    _startPhase(TimerPhase.rest, config, round, config.restSeconds, emit);
-  }
-
-  void _nextRoundWithoutRest(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    _transitionToWork(config, round + 1, emit);
-  }
-
-  void _transitionToWorkAfterRest(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    _transitionToWork(config, round + 1, emit);
-  }
-
-  void _transitionToCooldown(
-    TimerConfig config,
-    int round,
-    Emitter<TimerState> emit,
-  ) {
-    _startPhase(
-      TimerPhase.cooldown,
-      config,
-      round,
-      config.cooldownSeconds,
-      emit,
-    );
-  }
-
   void _completeWorkout(TimerConfig config, Emitter<TimerState> emit) {
+    WakelockPlus.disable();
     final totalElapsed = _workoutStartTime != null
         ? DateTime.now().difference(_workoutStartTime!) - _totalPausedDuration
         : Duration.zero;
@@ -359,19 +310,6 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     return const CountdownStrategy();
   }
 
-  int _getTotalPhaseSeconds(TimerConfig config, TimerPhase phase) {
-    switch (phase) {
-      case TimerPhase.prepare:
-        return config.prepareSeconds;
-      case TimerPhase.work:
-        return config.workSeconds;
-      case TimerPhase.rest:
-        return config.restSeconds;
-      case TimerPhase.cooldown:
-        return config.cooldownSeconds;
-    }
-  }
-
   void _startTicker() {
     _tickerSubscription?.cancel();
     _tickerSubscription = _ticker.tick().listen(
@@ -395,6 +333,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   }
 
   void _cleanupTimer() {
+    WakelockPlus.disable();
     _tickerSubscription?.cancel();
     _workoutStartTime = null;
     _totalPausedDuration = Duration.zero;

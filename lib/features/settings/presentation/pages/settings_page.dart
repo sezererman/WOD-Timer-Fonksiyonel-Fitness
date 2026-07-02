@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/constants/app_colors.dart';
+import '../../../../design_system/constants/app_strings.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../../domain/entities/app_settings.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';

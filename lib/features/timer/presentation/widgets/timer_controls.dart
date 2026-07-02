@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 
 enum TimerControlsState {
   initial,

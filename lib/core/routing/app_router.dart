@@ -1,24 +1,23 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/community/presentation/pages/community_feed_screen.dart' deferred as community;
-import '../../features/community/presentation/pages/share_workout_screen.dart' deferred as share_workout;
-import '../../features/history/presentation/pages/history_page.dart' deferred as history;
-import '../../features/challenges/presentation/pages/challenges_page.dart' deferred as challenges;
-import '../../features/profile/presentation/pages/profile_page.dart' deferred as profile;
-import '../../features/settings/presentation/pages/settings_page.dart' deferred as settings;
+import '../../features/community/presentation/pages/community_feed_screen.dart';
+import '../../features/community/presentation/pages/share_workout_screen.dart';
+import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/challenges/presentation/pages/challenges_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/workout_modes/presentation/pages/mode_selection_page.dart';
 import '../../features/timer/presentation/pages/timer_page.dart';
 import '../../features/timer/domain/entities/timer_config.dart';
 import 'route_constants.dart';
 import 'scaffold_with_nav_bar.dart';
-import 'deferred_widget.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -32,18 +31,18 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.timer,
     debugLogDiagnostics: kDebugMode,
-    
+
     // AuthBloc'daki state değişimlerini dinlemek için:
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
 
     redirect: (BuildContext context, GoRouterState state) {
       final authState = authBloc.state;
       final bool isAuth = authState is Authenticated;
-      final bool isLoggingIn = state.matchedLocation == Routes.login || 
+      final bool isLoggingIn = state.matchedLocation == Routes.login ||
                                state.matchedLocation == Routes.register;
 
       // 1. KORUMALI ROTALAR (Auth Guard)
-      // Topluluk ve Profil sekmeleri giriş gerektirir ancak kullanıcıyı dışarı atmamak 
+      // Topluluk ve Profil sekmeleri giriş gerektirir ancak kullanıcıyı dışarı atmamak
       // ve MiniTimerBar'ın kaybolmasını önlemek için redirect YAPMIYORUZ.
       // Bunun yerine o sayfaların içinde "Giriş Yapmalısınız" UI'ı göstereceğiz.
 
@@ -74,10 +73,7 @@ class AppRouter {
       GoRoute(
         path: Routes.shareWorkout,
         builder: (BuildContext context, GoRouterState state) {
-          return DeferredWidget(
-            libraryLoader: share_workout.loadLibrary,
-            createWidget: () => share_workout.ShareWorkoutScreen(),
-          );
+          return const ShareWorkoutScreen();
         },
       ),
 
@@ -110,70 +106,55 @@ class AppRouter {
               ),
             ],
           ),
-          
+
           // Branch 1: Challenges
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: Routes.challenges,
                 builder: (BuildContext context, GoRouterState state) {
-                  return DeferredWidget(
-                    libraryLoader: challenges.loadLibrary,
-                    createWidget: () => challenges.ChallengesPage(),
-                  );
+                  return const ChallengesPage();
                 },
               ),
             ],
           ),
-          
+
           // Branch 2: Sosyal (Community)
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: Routes.community,
                 builder: (BuildContext context, GoRouterState state) {
-                  return DeferredWidget(
-                    libraryLoader: community.loadLibrary,
-                    createWidget: () => community.CommunityFeedScreen(),
-                  );
+                  return const CommunityFeedScreen();
                 },
               ),
             ],
           ),
-          
+
           // Branch 3: Geçmiş
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: Routes.history,
                 builder: (BuildContext context, GoRouterState state) {
-                  return DeferredWidget(
-                    libraryLoader: history.loadLibrary,
-                    createWidget: () => history.HistoryPage(),
-                  );
+                  return const HistoryPage();
                 },
               ),
             ],
           ),
-          
+
           // Branch 4: Profil (Settings)
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: Routes.profile,
                 builder: (BuildContext context, GoRouterState state) {
-                  return DeferredWidget(
-                    libraryLoader: profile.loadLibrary,
-                    createWidget: () => profile.ProfilePage(),
-                  );
+                  return const ProfilePage();
                 },
                 routes: [
                   GoRoute(
                     path: 'settings', // /profile/settings
-                    builder: (context, state) => DeferredWidget(
-                      libraryLoader: settings.loadLibrary,
-                      createWidget: () => settings.SettingsPage(),
-                    ),
+                    builder: (context, state) => const SettingsPage(),
                   ),
                 ],
               ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../domain/entities/workout_mode.dart';
 
 /// Mod seçim kartı widget'ı.

@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/utils/duration_formatter.dart';
-import '../../../../core/widgets/circular_timer_painter.dart';
+import '../../../../design_system/widgets/circular_timer_painter.dart';
 import '../../domain/entities/timer_phase.dart';
 
 /// Büyük dairesel timer gösterimi.

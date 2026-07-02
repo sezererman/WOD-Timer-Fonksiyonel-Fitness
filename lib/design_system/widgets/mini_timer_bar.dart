@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/app_colors.dart';
-import '../routing/route_constants.dart';
+import '../../core/routing/route_constants.dart';
 import '../../features/timer/presentation/bloc/timer_bloc.dart';
 import '../../features/timer/presentation/bloc/timer_event.dart';
 import '../../features/timer/presentation/bloc/timer_state.dart';

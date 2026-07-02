@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/utils/duration_formatter.dart';
 import '../../../../features/leveling/presentation/widgets/tier_badge_widget.dart';

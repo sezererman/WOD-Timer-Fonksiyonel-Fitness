@@ -56,3 +56,13 @@ class TimerRoundIncremented extends TimerEvent {
 class TimerStopped extends TimerEvent {
   const TimerStopped();
 }
+
+/// Uygulama arka plandan (paused) ön plana (resumed) döndüğünde
+/// arka planda geçen süreyi telafi etmek için sayacı ileri sarar.
+class TimerFastForwarded extends TimerEvent {
+  final Duration elapsedBackgroundDuration;
+  const TimerFastForwarded(this.elapsedBackgroundDuration);
+
+  @override
+  List<Object?> get props => [elapsedBackgroundDuration];
+}

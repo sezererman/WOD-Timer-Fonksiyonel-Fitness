@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
+import '../../../../design_system/constants/app_colors.dart';
+import '../../../../design_system/constants/app_strings.dart';
 import '../../domain/entities/timer_phase.dart';
 
 /// Mevcut fazı gösteren banner (WORK / REST / PREPARE / COOLDOWN).

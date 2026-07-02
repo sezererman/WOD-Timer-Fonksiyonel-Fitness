@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/constants/app_colors.dart';
+import '../../../../design_system/constants/app_strings.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../bloc/workout_mode_bloc.dart';
 import '../bloc/workout_mode_event.dart';
 import '../bloc/workout_mode_state.dart';
+import '../../domain/entities/workout_mode.dart';
 import '../widgets/mode_card.dart';
 import 'mode_config_page.dart';
+import 'wod_builder_page.dart';
 
 /// Ana mod seçim ekranı.
 class ModeSelectionPage extends StatelessWidget {
@@ -90,9 +92,16 @@ class ModeSelectionPage extends StatelessWidget {
           isSelected: state.selectedMode == mode,
           onTap: () {
             context.read<WorkoutModeBloc>().add(WorkoutModeSelected(mode));
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ModeConfigPage(mode: mode)),
-            );
+            
+            if (mode == WorkoutMode.custom) {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WodBuilderPage()),
+              );
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ModeConfigPage(mode: mode)),
+              );
+            }
           },
         );
       },

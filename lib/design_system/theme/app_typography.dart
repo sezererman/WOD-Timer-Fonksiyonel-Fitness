@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Uygulama renk paletine göre renk döndüren yardımcı.
-/// Ayrıca core/constants/app_colors.dart'ı re-export eder.
+/// Ayrıca design_system/constants/app_colors.dart'ı re-export eder.
 export '../constants/app_colors.dart';
 
 /// Renk temalı extension'lar.

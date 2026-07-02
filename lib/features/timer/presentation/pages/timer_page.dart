@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/routing/route_constants.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../../domain/entities/timer_config.dart';
 import '../bloc/timer_bloc.dart';
 import '../bloc/timer_event.dart';
@@ -31,74 +31,147 @@ class TimerPage extends StatefulWidget {
   State<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> {
+class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
+  DateTime? _pausedTime;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // addPostFrameCallback: Bir kez, mount sonrası çalışır.
-    // Önceki pattern her TimerInitial state'inde callback biriktiriyordu.
+    //
+    // DURUM ANALİZİ:
+    //
+    // ► TimerActiveState (Running | Paused):
+    //     Mini-Player'dan geri dönüş — timer arka planda çalışıyordu.
+    //     Müdahale ETME; aksi halde timer sıfırlanır.
+    //
+    // ► TimerInitial:
+    //     İlk açılış. Doğrudan TimerStarted gönder.
+    //
+    // ► TimerAborted | TimerCompleted (BLACK SCREEN BUG FIX):
+    //     Önceki antrenman bitti/iptal edildi, BLoC temiz değil.
+    //     Önce TimerReset → TimerInitial'a sıfırla,
+    //     ardından TimerStarted ile yeni antrenmanı başlat.
+    //     Bu kontrol olmadan 2. antrenman açılışında SizedBox.shrink()
+    //     render edilir ve ekran tamamen siyah görünür.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<TimerBloc>().add(TimerStarted(widget.config));
+      if (!mounted) return;
+      final currentState = context.read<TimerBloc>().state;
+      if (currentState is TimerActiveState) {
+        // Mini-Player'dan geri dönüş: dokunma, timer çalışıyor.
+        return;
       }
+      // Kirli state: önce temizle (TimerAborted / TimerCompleted durumları)
+      if (currentState is! TimerInitial) {
+        context.read<TimerBloc>().add(const TimerReset());
+      }
+      // Yeni antrenmanı başlat (TimerInitial → TimerRunning)
+      context.read<TimerBloc>().add(TimerStarted(widget.config));
     });
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Uygulama arka plana atıldığında veya inaktif olduğunda zamanı kaydet
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _pausedTime ??= DateTime.now();
+    } 
+    // Uygulama tekrar ön plana (aktif) geldiğinde geçen süreyi hesapla
+    else if (state == AppLifecycleState.resumed) {
+      if (_pausedTime != null) {
+        final backgroundDuration = DateTime.now().difference(_pausedTime!);
+        _pausedTime = null;
+        
+        if (mounted) {
+          context.read<TimerBloc>().add(TimerFastForwarded(backgroundDuration));
+        }
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: GradientBackground(
-        // Sayfa iskelet (AppBar + GradientBackground + SafeArea)
-        // artık rebuild edilmiyor — yalnızca BlocBuilder'lar rebuild oluyor.
-        child: SafeArea(
-          child: BlocListener<TimerBloc, TimerState>(
-            listener: (context, state) {
-              if (state is TimerCompleted) {
-                // Timer bittiğinde yeni rozet var mı diye kontrol et
-                context.read<BadgesBloc>().add(const CheckForNewBadges());
-              } else if (state is TimerAborted) {
-                context.pop();
-              }
-            },
-            child: BlocBuilder<TimerBloc, TimerState>(
-            // Yalnızca makro state geçişlerinde (Initial→Running, Running→Completed)
-            // tüm body rebuild edilir.
-            buildWhen: (prev, curr) {
-              if (prev.runtimeType == curr.runtimeType &&
-                  prev is TimerActiveState &&
-                  curr is TimerActiveState) {
-                // Aynı macro state — granular builder'lar halledecek
-                return false;
-              }
-              return true;
-            },
-            builder: (context, state) {
-              if (state is TimerInitial) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                );
-              }
-              if (state is TimerCompleted) {
-                return _TimerCompletedView(
-                  state: state,
-                  config: widget.config,
-                );
-              }
-              if (state is TimerActiveState) {
-                return _TimerActiveView(config: widget.config);
-              }
-              return const SizedBox.shrink();
-            },
+    // PopScope: Geri tuşunu veya AppBar back butonunu yakalar.
+    //
+    // canPop: true → Sistem pop işlemine her zaman izin verir.
+    //   (TimerBloc arka planda çalışmaya devam eder — dispose edilmez.)
+    //   Geri tuşuyla çıkış BLoC'u durdurmaz; timer Mini-Player'dan
+    //   takip edilmeye devam eder.
+    //
+    //   Antrenmanı bilinçli sonlandırmak için kullanıcı "Sonlandır"
+    //   butonuna basmalıdır (_showStopDialog → TimerStopped event).
+    return PopScope<Object?>(
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        // didPop: true → pop başarıyla gerçekleşti.
+        // TimerBloc state'i korunuyor; shell listener mini-player'ı gösterecek.
+        assert(didPop, 'canPop:true olduğu için her zaman true olmalı.');
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded),
+            onPressed: () => context.pop(),
           ),
-         ),
+        ),
+        body: GradientBackground(
+          // Sayfa iskelet (AppBar + GradientBackground + SafeArea)
+          // artık rebuild edilmiyor — yalnızca BlocBuilder'lar rebuild oluyor.
+          child: SafeArea(
+            child: BlocListener<TimerBloc, TimerState>(
+              listener: (context, state) {
+                if (state is TimerCompleted) {
+                  // Timer bittiğinde yeni rozet var mı diye kontrol et
+                  context.read<BadgesBloc>().add(const CheckForNewBadges());
+                } else if (state is TimerAborted) {
+                  context.pop();
+                }
+              },
+              child: BlocBuilder<TimerBloc, TimerState>(
+                // Yalnızca makro state geçişlerinde (Initial→Running, Running→Completed)
+                // tüm body rebuild edilir.
+                buildWhen: (prev, curr) {
+                  if (prev.runtimeType == curr.runtimeType &&
+                      prev is TimerActiveState &&
+                      curr is TimerActiveState) {
+                    // Aynı macro state — granular builder'lar halledecek
+                    return false;
+                  }
+                  return true;
+                },
+                builder: (context, state) {
+                  if (state is TimerInitial) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    );
+                  }
+                  if (state is TimerCompleted) {
+                    return _TimerCompletedView(
+                      state: state,
+                      config: widget.config,
+                    );
+                  }
+                  if (state is TimerActiveState) {
+                    return _TimerActiveView(config: widget.config);
+                  }
+                  // Güvenlik fallback'i: TimerAborted veya bilinmeyen geçiş
+                  // durumunda SiyahEkran yerine yükleniyor göstergesi.
+                  // (TimerReset → TimerInitial → TimerRunning geçiş süresi)
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -140,11 +213,13 @@ class _TimerActiveView extends StatelessWidget {
               // 0x0D ≈ 0.05 * 255 — görsel sonuç aynı, layer yok.
               Positioned(
                 top: 100,
-                left: 0,
-                right: 0,
-                child: Center(
+                left: 16,
+                right: 16,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
                   child: Text(
                     state.phase.name.toUpperCase(),
+                    maxLines: 1,
                     style: const TextStyle(
                       fontSize: 120,
                       fontWeight: FontWeight.w900,

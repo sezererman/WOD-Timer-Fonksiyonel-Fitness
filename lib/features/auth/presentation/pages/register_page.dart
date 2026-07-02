@@ -5,7 +5,7 @@ import '../../../../core/routing/route_constants.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../../../../core/widgets/custom_password_field.dart';
+import '../../../../design_system/widgets/custom_password_field.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

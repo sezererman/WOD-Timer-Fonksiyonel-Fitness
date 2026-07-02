@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/routing/route_constants.dart';
 import '../../../../core/utils/duration_formatter.dart';
 import '../../../timer/domain/entities/timer_config.dart';

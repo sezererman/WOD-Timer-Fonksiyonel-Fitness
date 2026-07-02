@@ -1,9 +1,19 @@
 import 'package:equatable/equatable.dart';
 import '../../../workout_modes/domain/entities/workout_mode.dart';
+import 'blocks/workout_block.dart';
 
 /// Timer yapılandırma entity'si.
 /// Bir antrenmanın tüm zamanlama parametrelerini tutar.
 class TimerConfig extends Equatable {
+  /// Özel antrenman oluşturucu (Custom WOD Builder) ağaç yapısı.
+  /// Eğer bu liste boş değilse, alt taraftaki 'Legacy' alanlar yerine
+  /// bu hiyerarşik yapı (ağaç) kullanılarak antrenman akışı oluşturulur.
+  final List<WorkoutBlock> blocks;
+
+  // --- LEGACY ALANLAR ---
+  // İleride UI ve Bloc tamamen 'blocks' yapısına geçtiğinde bu alanlar
+  // kaldırılabilecek veya sadece 'Basit Mod' için korunacaktır.
+
   /// Toplam tur sayısı.
   final int rounds;
 
@@ -26,6 +36,7 @@ class TimerConfig extends Equatable {
   final bool requiresManualRoundIncrement;
 
   const TimerConfig({
+    this.blocks = const [],
     required this.rounds,
     required this.workSeconds,
     this.restSeconds = 0,
@@ -37,6 +48,16 @@ class TimerConfig extends Equatable {
 
   /// Toplam antrenman süresi (saniye).
   int get totalSeconds {
+    // 1. Yeni Sistem: Eğer özel bloklar tanımlandıysa ağaçtan hesapla
+    if (blocks.isNotEmpty) {
+      final blocksDuration = blocks.fold<int>(
+        0,
+        (sum, block) => sum + block.totalDurationSeconds,
+      );
+      return prepareSeconds + blocksDuration + cooldownSeconds;
+    }
+
+    // 2. Eski Sistem (Legacy): Düz hesaplama
     final effectiveRounds = rounds > 0 ? rounds : 1;
     // AMRAP modunda rounds 0 veya 1 olduğunda aralara dinlenme konulmaz.
     final restCount = effectiveRounds > 1 ? effectiveRounds - 1 : 0;
@@ -50,6 +71,7 @@ class TimerConfig extends Equatable {
   String get modeDisplayName => mode?.displayName ?? WorkoutMode.custom.displayName;
 
   TimerConfig copyWith({
+    List<WorkoutBlock>? blocks,
     int? rounds,
     int? workSeconds,
     int? restSeconds,
@@ -59,6 +81,7 @@ class TimerConfig extends Equatable {
     bool? requiresManualRoundIncrement,
   }) {
     return TimerConfig(
+      blocks: blocks ?? this.blocks,
       rounds: rounds ?? this.rounds,
       workSeconds: workSeconds ?? this.workSeconds,
       restSeconds: restSeconds ?? this.restSeconds,
@@ -72,6 +95,7 @@ class TimerConfig extends Equatable {
 
   @override
   List<Object?> get props => [
+        blocks,
         rounds,
         workSeconds,
         restSeconds,
@@ -81,3 +105,4 @@ class TimerConfig extends Equatable {
         requiresManualRoundIncrement,
       ];
 }
+

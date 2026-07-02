@@ -14,6 +14,7 @@ import '../../../features/history/domain/usecases/check_and_award_badges.dart';
 import '../../../features/history/domain/services/badge_service.dart';
 import '../../../features/history/domain/services/history_statistics_service.dart';
 import '../../../features/history/domain/services/i_history_statistics_service.dart';
+import '../../../infrastructure/services/workout_sync_service.dart';
 import '../../../features/history/presentation/bloc/badges_bloc.dart';
 import '../../../features/history/presentation/bloc/history_bloc.dart';
 
@@ -46,6 +47,12 @@ abstract final class HistoryModule {
     );
     sl.registerLazySingleton<CheckAndAwardBadgesUseCase>(
       () => CheckAndAwardBadgesUseCase(repository: sl(), badgeService: sl()),
+    );
+    sl.registerLazySingleton<WorkoutSyncService>(
+      () => WorkoutSyncService(
+        supabaseClient: sl(),
+        historyRepository: sl(),
+      ),
     );
     sl.registerFactory<BadgesBloc>(
       () => BadgesBloc(

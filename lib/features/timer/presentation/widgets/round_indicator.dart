@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 
 /// Mevcut tur / toplam tur göstergesi.
 class RoundIndicator extends StatelessWidget {

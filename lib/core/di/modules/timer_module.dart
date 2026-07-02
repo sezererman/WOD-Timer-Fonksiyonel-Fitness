@@ -27,7 +27,10 @@ abstract final class TimerModule {
       () => TimerRepositoryImpl(sl()),
     );
     sl.registerLazySingleton<WorkoutAutoSaveObserver>(
-      () => WorkoutAutoSaveObserver(saveWorkout: sl()),
+      () => WorkoutAutoSaveObserver(
+        saveWorkout: sl(),
+        syncService: sl(),
+      ),
     );
     sl.registerLazySingleton<TimerBloc>(
       () => TimerBloc(

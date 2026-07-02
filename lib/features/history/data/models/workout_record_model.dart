@@ -9,6 +9,7 @@ class WorkoutRecordModel {
   final int workSeconds;
   final int restSeconds;
   final String date;
+  final String syncStatus;
 
   const WorkoutRecordModel({
     required this.id,
@@ -18,6 +19,7 @@ class WorkoutRecordModel {
     required this.workSeconds,
     required this.restSeconds,
     required this.date,
+    required this.syncStatus,
   });
 
   factory WorkoutRecordModel.fromEntity(WorkoutRecord entity) {
@@ -29,6 +31,7 @@ class WorkoutRecordModel {
       workSeconds: entity.workSeconds,
       restSeconds: entity.restSeconds,
       date: entity.date.toIso8601String(),
+      syncStatus: entity.syncStatus,
     );
   }
 
@@ -41,6 +44,7 @@ class WorkoutRecordModel {
       workSeconds: map['workSeconds'] as int? ?? 0,
       restSeconds: map['restSeconds'] as int? ?? 0,
       date: map['date'] as String? ?? DateTime.now().toIso8601String(),
+      syncStatus: map['syncStatus'] as String? ?? 'pending',
     );
   }
 
@@ -53,6 +57,7 @@ class WorkoutRecordModel {
       workSeconds: workSeconds,
       restSeconds: restSeconds,
       date: DateTime.parse(date),
+      syncStatus: syncStatus,
     );
   }
 
@@ -65,6 +70,7 @@ class WorkoutRecordModel {
       'workSeconds': workSeconds,
       'restSeconds': restSeconds,
       'date': date,
+      'syncStatus': syncStatus,
     };
   }
 }

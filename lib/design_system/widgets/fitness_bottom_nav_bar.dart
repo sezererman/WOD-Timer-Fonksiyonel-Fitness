@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../routing/app_tab.dart';
+import '../../core/routing/app_tab.dart';
 
 class FitnessBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -76,7 +76,9 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Terli eller için büyük hit-box: Expanded ve HitTestBehavior.opaque
+    // Expanded + HitTestBehavior.opaque: terli eller için geniş dokunma alanı.
+    // onTap: gesture arena tamamlandıktan sonra tetiklenir — scroll / swipe
+    // hareketleriyle çakışma olmaz (onTapDown ile yaşanan double-tap bug'u giderildi).
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -85,7 +87,7 @@ class _NavBarItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedScale(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 150),
               curve: Curves.easeOutBack,
               scale: isSelected ? 1.2 : 1.0,
               child: Icon(
@@ -96,10 +98,10 @@ class _NavBarItem extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 150),
               style: TextStyle(
                 fontSize: 10,
-                fontFamily: 'Inter', // Projenizde varsa, yoksa varsayılanı kullanır
+                fontFamily: 'Inter',
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? AppColors.primary : AppColors.textHint,
               ),
@@ -109,7 +111,7 @@ class _NavBarItem extends StatelessWidget {
             // Seçili sekme için parlayan neon nokta indikatörü
             AnimatedOpacity(
               opacity: isSelected ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 150),
               child: Container(
                 width: 5,
                 height: 5,

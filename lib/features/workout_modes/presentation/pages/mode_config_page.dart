@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../design_system/constants/app_colors.dart';
 import '../../../../core/routing/route_constants.dart';
-import '../../../../core/constants/app_durations.dart';
-import '../../../../core/widgets/gradient_background.dart';
-import '../../../../core/widgets/primary_button.dart';
+import '../../../../design_system/constants/app_durations.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
+import '../../../../design_system/widgets/primary_button.dart';
 import '../../../timer/domain/entities/timer_config.dart';
 import '../../domain/entities/workout_mode.dart';
 import '../widgets/config_slider.dart';

@@ -10,8 +10,17 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<List<WorkoutRecord>> getHistory() => _datasource.getHistory();
 
   @override
-  Future<void> saveWorkout(WorkoutRecord record) => _datasource.saveWorkout(record);
+  Future<void> saveWorkout(WorkoutRecord record) =>
+      _datasource.saveWorkout(record);
 
   @override
   Future<void> deleteWorkout(String id) => _datasource.deleteWorkout(id);
+
+  @override
+  Future<List<WorkoutRecord>> getPendingWorkouts() =>
+      _datasource.getPendingWorkouts();
+
+  @override
+  Future<void> updateSyncStatus(String id, String status) =>
+      _datasource.updateSyncStatus(id, status);
 }

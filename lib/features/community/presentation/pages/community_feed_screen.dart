@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/widgets/gradient_background.dart';
+import '../../../../design_system/constants/app_colors.dart';
+import '../../../../design_system/widgets/gradient_background.dart';
 import '../bloc/workout_share/workout_share_bloc.dart';
 import '../bloc/workout_share/workout_share_event.dart';
 import '../bloc/workout_share/workout_share_state.dart';
